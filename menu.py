@@ -1,3 +1,4 @@
+#!/usr/bin/#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'menu.ui'
@@ -13,6 +14,8 @@ try:
 except AttributeError:
     def _fromUtf8(s):
         return s
+def myfunc():
+    print("Hello World!")
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
@@ -23,6 +26,12 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_ClassicMenu(object):
+    def circleDraw(self):
+        print("You want to print a circle!")
+    def rectangleDraw(self):
+        print("You want to print a rectangle!")
+    # def exitClicked(self):
+    #     print("You want to quit")
     def setupUi(self, ClassicMenu):
         ClassicMenu.setObjectName(_fromUtf8("ClassicMenu"))
         ClassicMenu.resize(616, 504)
@@ -33,9 +42,15 @@ class Ui_ClassicMenu(object):
         self.circle = QtGui.QPushButton(self.centralwidget)
         self.circle.setObjectName(_fromUtf8("circle"))
         self.horizontalLayout_2.addWidget(self.circle)
+            ### Button Event Circle #############
+        self.circle.clicked.connect(self.circleDraw)
+        ###########################################
         self.rectangle = QtGui.QPushButton(self.centralwidget)
         self.rectangle.setObjectName(_fromUtf8("rectangle"))
         self.horizontalLayout_2.addWidget(self.rectangle)
+            ### Button Event Rectangle #############
+        self.rectangle.clicked.connect(self.rectangleDraw)
+        ###########################################
         ClassicMenu.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(ClassicMenu)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 616, 25))
@@ -48,18 +63,31 @@ class Ui_ClassicMenu(object):
         self.statusbar = QtGui.QStatusBar(ClassicMenu)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         ClassicMenu.setStatusBar(self.statusbar)
+        ##### Action Open
         self.actionOpen = QtGui.QAction(ClassicMenu)
         self.actionOpen.setObjectName(_fromUtf8("actionOpen"))
+        self.actionOpen.setShortcut('Ctrl+O')
+        self.actionOpen.setStatusTip('Open application')
+        self.actionOpen.triggered.connect(self.file_open)
+        ###### Save
         self.actionSave = QtGui.QAction(ClassicMenu)
         self.actionSave.setObjectName(_fromUtf8("actionSave"))
+        self.actionSave.triggered.connect(self.save)
+
         self.actionAbout = QtGui.QAction(ClassicMenu)
         self.actionAbout.setObjectName(_fromUtf8("actionAbout"))
         self.actionAbout_2 = QtGui.QAction(ClassicMenu)
         self.actionAbout_2.setObjectName(_fromUtf8("actionAbout_2"))
+        ############
         self.actionExit = QtGui.QAction(ClassicMenu)
         self.actionExit.setObjectName(_fromUtf8("actionExit"))
+        self.actionExit.setShortcut('Ctrl+Q')
+        self.actionExit.setStatusTip('Exit application')
+        self.actionExit.triggered.connect(QtGui.qApp.quit)
+        ###########
         self.actionAbout_3 = QtGui.QAction(ClassicMenu)
         self.actionAbout_3.setObjectName(_fromUtf8("actionAbout_3"))
+        self.actionAbout_3.triggered.connect(self.about)
         self.menuFile_open.addSeparator()
         self.menuFile_open.addAction(self.actionOpen)
         self.menuFile_open.addAction(self.actionSave)
@@ -74,6 +102,26 @@ class Ui_ClassicMenu(object):
         self.retranslateUi(ClassicMenu)
         QtCore.QMetaObject.connectSlotsByName(ClassicMenu)
 
+    def save(self):
+        f = open(self.afilename, "w")
+        f.write(self.textEdit.toPlainText())
+        f.close()
+        sel.statusbar.showMessage("File saved.")
+
+    def about(self):
+        QtGui.QMessageBox.about(None,"About","Paul GUI 2018")
+
+    def file_open(self):
+        self.afilename = QtGui.QFileDialog.getOpenFileName(None,"Open File")
+        f = open(self.afilename,"r")
+
+        self.editor()
+
+        with f:
+            text = f.read()
+            self.textEdit.setText(text)
+
+
     def retranslateUi(self, ClassicMenu):
         ClassicMenu.setWindowTitle(_translate("ClassicMenu", "Classic Menu", None))
         self.circle.setText(_translate("ClassicMenu", "Circle", None))
@@ -85,6 +133,7 @@ class Ui_ClassicMenu(object):
         self.actionAbout.setText(_translate("ClassicMenu", "About", None))
         self.actionAbout_2.setText(_translate("ClassicMenu", "About", None))
         self.actionExit.setText(_translate("ClassicMenu", "Exit", None))
+
         self.actionAbout_3.setText(_translate("ClassicMenu", "About", None))
 
 
@@ -96,4 +145,3 @@ if __name__ == "__main__":
     ui.setupUi(ClassicMenu)
     ClassicMenu.show()
     sys.exit(app.exec_())
-
