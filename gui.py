@@ -23,6 +23,7 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.actionOpen.setShortcut('Ctrl+O')
         self.actionOpen.setStatusTip('Open application')
         self.actionOpen.triggered.connect(self.file_open)
+
         #action About
         self.actionAbout_GUI.triggered.connect(self.about)
 
@@ -30,9 +31,20 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow):
         exitButton = QtGui.QAction(None)
         self.actionQuit.setShortcut('Ctrl+Q')
         self.actionQuit.setStatusTip('Exit application')
-        self.actionQuit.setStatusTip('Exit application')
         self.actionQuit.triggered.connect(QtGui.qApp.quit)
 
+        #Add save button
+        saveButton = QtGui.QAction(None)
+        self.actionSave.setShortcut('Ctrl+S')
+        self.actionSave.setStatusTip("Save Application")
+        self.actionSave.triggered.connect(self.file_save)
+
+    def file_save(self):
+        name = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+        file = open(name, 'w')
+        text = self.textEdit.toPlainText()
+        file.write(text)
+        file.close()
 
     def file_open(self):
         fname = QtGui.QFileDialog.getOpenFileName(self, 'Open file',
@@ -45,7 +57,7 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow):
             self.textEdit.setText(data)
 
     def about(self):
-        QtGui.QMessageBox.about(None,"About","Paul GUI 2018")
+        QtGui.QMessageBox.about(None,"About","George-Paul GUI-Interface 2018")
 
 
 def main():
