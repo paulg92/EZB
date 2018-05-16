@@ -26,6 +26,13 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow):
         #action About
         self.actionAbout_GUI.triggered.connect(self.about)
 
+        # Add exit button
+        exitButton = QtGui.QAction(None)
+        self.actionQuit.setShortcut('Ctrl+Q')
+        self.actionQuit.setStatusTip('Exit application')
+        self.actionQuit.setStatusTip('Exit application')
+        self.actionQuit.triggered.connect(QtGui.qApp.quit)
+
 
     def file_open(self):
         fname = QtGui.QFileDialog.getOpenFileName(self, 'Open file',
@@ -36,16 +43,6 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow):
         with f:
             data = f.read()
             self.textEdit.setText(data)
-
-    # def file_open(self):
-    #     self.afilename = QtGui.QFileDialog.getOpenFileName(None,"Open File")
-    #     f = open(self.afilename,"r")
-    #
-    #     self.editor()
-    #
-    #     with f:
-    #         text = f.read()
-    #         self.textEdit.setText(text)
 
     def about(self):
         QtGui.QMessageBox.about(None,"About","Paul GUI 2018")
