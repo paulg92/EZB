@@ -87,7 +87,6 @@ class Ui_MainWindow(object):
         self.menuAbout.addSeparator()
         self.menuAbout.addSeparator()
         self.menuAbout.addAction(self.actionAbout_GUI)
-        self.menuAbout.addAction(self.actionDocumentation)
         self.menuAbout.addSeparator()
         self.menuAbout.addAction(self.actionFAQ)
         self.menubar.addAction(self.menuFile_Menu.menuAction())
