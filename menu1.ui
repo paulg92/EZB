@@ -14,7 +14,7 @@
    <string>GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="Rectangle">
     <property name="geometry">
      <rect>
       <x>80</x>
@@ -24,10 +24,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Rectangle</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="Circle">
     <property name="geometry">
      <rect>
       <x>250</x>
@@ -37,10 +37,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Circle</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
+   <widget class="QPushButton" name="Line">
     <property name="geometry">
      <rect>
       <x>440</x>
@@ -50,7 +50,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Line</string>
     </property>
    </widget>
    <widget class="QWidget" name="gridLayoutWidget">
@@ -104,7 +104,6 @@
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionAbout_GUI"/>
-    <addaction name="actionDocumentation"/>
     <addaction name="separator"/>
     <addaction name="actionFAQ"/>
    </widget>
@@ -119,12 +118,12 @@
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>Save As</string>
    </property>
   </action>
   <action name="actionSave_As">
    <property name="text">
-    <string>Save As</string>
+    <string>Save</string>
    </property>
   </action>
   <action name="actionQuit">
