@@ -39,16 +39,6 @@ class GraphicsView(QtGui.QWidget):
         self.update()
         return True
 
-    def saveImage(self, fileName, fileFormat):
-        visibleImage = self.image
-        self.resizeImage(visibleImage, self.size())
-
-        if visibleImage.save(fileName, fileFormat):
-            self.modified = False
-            return True
-        else:
-            return False
-
     def setPenColor(self, newColor):
         self.myPenColor = newColor
 
@@ -154,8 +144,26 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         #Button Triangle Draw
         self.Triangle.clicked.connect(self.triangleDraw)
 
+        penColor = QtGui.QAction(None)
+        self.PenColor.setShortcut('Ctrl+C')
+        self.PenColor.triggered.connect(self.penColor)
+
+        penWidth = QtGui.QAction(None)
+        self.PenWidth.setShortcut('Ctrl+W')
+        self.PenWidth.triggered.connect(self.penWidth)
+
+        clearImage = QtGui.QAction(None)
+        self.Clear_Screen.setShortcut('Ctrl+L')
+        self.Clear_Screen.triggered.connect(self.clearImage)
+
         #action About
         self.actionAbout_GUI.triggered.connect(self.about)
+
+        optionMenu = QtGui.QMenu("&Options", self)
+        optionMenu.addAction(self.PenColor)
+        optionMenu.addAction(self.PenWidth)
+        optionMenu.addSeparator()
+        #optionMenu.addAction(self.clearScreenAct)
 
         # Add exit button
         exitButton = QtGui.QAction(None)
@@ -213,6 +221,22 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
             coord = re.findall(r'[XY]-\d.\d\d\d', line)
             if coord:
                 print("{} - {}".format(coord[0], coord[1]))
+
+    def penColor(self):
+        newColor = QtGui.QColorDialog.getColor(self.graphicsView.penColor())
+        if newColor.isValid():
+            self.graphicsView.setPenColor(newColor)
+
+    def penWidth(self):
+        newWidth, ok = QtGui.QInputDialog.getInteger(self, "Scribble",
+            "Select pen width:", self.graphicsView.penWidth(), 1, 50, 1)
+        if ok:
+            self.graphicsView.setPenWidth(newWidth)
+
+    def clearImage(self):
+        self.image.fill(QtGui.qRgb(255, 255, 255))
+        self.modified = True
+        self.update()
 
     def file_save(self):
         name = QtGui.QFileDialog.getSaveFileName(self, 'Save File','/home/paul/EZB/Project/GUI')
