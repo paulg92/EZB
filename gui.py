@@ -1,124 +1,12 @@
-from PyQt4 import QtGui, QtCore  # Import the PyQt4 module we'll need
+from PyQt4 import QtGui, QtCore, Qt # Import the PyQt4 module we'll need
 import sys, math # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
-from PyQt4.QtGui import QPainter
+from PyQt4.QtGui import QPainter, QImage, QImageWriter, QPen, qRgb
 # it also keeps events etc that we defined in Qt Designer
 import os,re  # For listing directory methods
 import graphicsview
 
-
-class GraphicsView(QtGui.QWidget):
-    """
-      this scales the image but it's not good, too many refreshes really mess it up!!!
-    """
-    def __init__(self, parent=None):
-        super(GraphicsView, self).__init__(parent)
-
-        self.setAttribute(QtCore.Qt.WA_StaticContents)
-        self.modified = False
-        self.scribbling = False
-        self.myPenWidth = 1
-        self.myPenColor = QtCore.Qt.blue
-        imageSize = QtCore.QSize(500, 500)
-        self.image = QtGui.QImage(imageSize, QtGui.QImage.Format_RGB32)
-        self.lastPoint = QtCore.QPoint()
-
-    def openImage(self, fileName):
-        loadedImage = QtGui.QImage()
-        if not loadedImage.load(fileName):
-            return False
-
-        w = loadedImage.width()
-        h = loadedImage.height()
-        self.mainWindow.resize(w, h)
-
-#       newSize = loadedImage.size().expandedTo(self.size())
-#       self.resizeImage(loadedImage, newSize)
-        self.image = loadedImage
-        self.modified = False
-        self.update()
-        return True
-
-    def setPenColor(self, newColor):
-        self.myPenColor = newColor
-
-    def setPenWidth(self, newWidth):
-        self.myPenWidth = newWidth
-
-    def clearImage(self):
-        self.image.fill(QtGui.qRgb(255, 255, 255))
-        self.modified = True
-        self.update()
-
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.lastPoint = event.pos()
-            self.scribbling = True
-
-    def mouseMoveEvent(self, event):
-        if (event.buttons() & QtCore.Qt.LeftButton) and self.scribbling:
-            self.drawLineTo(event.pos())
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton and self.scribbling:
-            self.drawLineTo(event.pos())
-            self.scribbling = False
-
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        painter.drawImage(event.rect(), self.image)
-
-    def resizeEvent(self, event):
-
-        self.resizeImage(self.image, event.size())
-
-        super(GraphicsView, self).resizeEvent(event)
-
-    def drawLineTo(self, endPoint):
-        painter = QtGui.QPainter(self.image)
-        painter.setPen(QtGui.QPen(self.myPenColor, self.myPenWidth,
-            QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
-        painter.drawLine(self.lastPoint, endPoint)
-        self.modified = True
-
-        self.update()
-        self.lastPoint = QtCore.QPoint(endPoint)
-
-    def resizeImage(self, image, newSize):
-        if image.size() == newSize:
-            return
-
-# this resizes the canvas without resampling the image
-        newImage = QtGui.QImage(newSize, QtGui.QImage.Format_RGB32)
-        newImage.fill(QtGui.qRgb(255, 255, 255))
-        painter = QtGui.QPainter(newImage)
-        painter.drawImage(QtCore.QPoint(0, 0), image)
-
-
-        self.image = newImage
-
-    def print_(self):
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-
-        printDialog = QtGui.QPrintDialog(printer, self)
-        if printDialog.exec_() == QtGui.QDialog.Accepted:
-            painter = QtGui.QPainter(printer)
-            rect = painter.viewport()
-            size = self.image.size()
-            size.scale(rect.size(), QtCore.Qt.KeepAspectRatio)
-            painter.setViewport(rect.x(), rect.y(), size.width(), size.height())
-            painter.setWindow(self.image.rect())
-            painter.drawImage(0, 0, self.image)
-            painter.end()
-
-    def isModified(self):
-        return self.modified
-
-    def penColor(self):
-        return self.myPenColor
-
-    def penWidth(self):
-        return self.myPenWidth
+from buttons import GraphicsView
 
 
 class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
@@ -127,11 +15,13 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         QtGui.QMainWindow.__init__(self, parent = parent)
         self.setupUi(self)  # This is defined in design.py file automatically
 
+        self.pen = QtGui.QPen(QtCore.Qt.black, 3, QtCore.Qt.SolidLine)
+
         self.graphicsView = GraphicsView(self)
         self.graphicsView.clearImage()
-        self.graphicsView.mainWindow = self  # maybe not using this?
         self.setCentralWidget(self.graphicsView)
 
+        self.resize(600, 600)
 
         ##### Action Open
         openFile = QtGui.QAction(None)
@@ -139,19 +29,35 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         self.actionOpen.setStatusTip('Open application')
         self.actionOpen.triggered.connect(self.file_open)
 
-        #Button Rectangle Draw
-        self.Rectangle.clicked.connect(self.rectangleDraw)
-        #Button Triangle Draw
-        self.Triangle.clicked.connect(self.triangleDraw)
+        # rectangleDraw = QtGui.QAction(None)
+        # self.actionRectangle.setShortcut('Ctrl+R')
+        # self.actionRectangle.triggered.connect(self.rectangleDraw)
 
+        circleDraw = QtGui.QAction(None)
+        self.actionCircle.setShortcut('Ctrl+C')
+        self.actionCircle.triggered.connect(self.circleDraw)
+
+        #Button Triangle Draw
+        #self.Triangle.clicked.connect(self.triangleDraw)
+        #Line drawing
+        self.Line.clicked.connect(self.lineDraw)
+        #Polygon drawing
+        self.Polygon.clicked.connect(self.polygonDraw)
+
+        #Button Polygon Draw
+        #self.Polygon.clicked.connect(self.PolygonDraw)
+
+        #Pen color
         penColor = QtGui.QAction(None)
         self.PenColor.setShortcut('Ctrl+C')
         self.PenColor.triggered.connect(self.penColor)
 
+        #Pen width
         penWidth = QtGui.QAction(None)
         self.PenWidth.setShortcut('Ctrl+W')
         self.PenWidth.triggered.connect(self.penWidth)
 
+        #clear image
         clearImage = QtGui.QAction(None)
         self.Clear_Screen.setShortcut('Ctrl+L')
         self.Clear_Screen.triggered.connect(self.clearImage)
@@ -177,50 +83,43 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         self.actionSave.setStatusTip("Save Application")
         self.actionSave.triggered.connect(self.file_save)
 
-    def rectangleDraw(self):
-        gcode = [
-            ';TYPE:SKIN',
-            'G00 X-0 Y-0 F70',
-            'G01 Z-1 F50',
-            'G01 X0 Y20 F50',
-            'G01 X25 Y20',
-            'G01 X25 Y0',
-            'G01 X0 Y0',
-            'G00 Z0 F70',
-            'M30'
-            ]
 
-        for line in gcode:
-            coord = re.findall(r'[XY]-\d.\d\d\d', line)
-            if coord:
-                print("{} - {}".format(coord[0], coord[1]))
 
-    def triangleDraw(self):
-        gcode = [
-            ';TYPE:SKIN',
-            'G1 F1200 X-9.914 Y-9.843 E3.36222',
-            'G0 F9000 X-9.843 Y-9.914',
-            'G1 F1200 X9.914 Y9.843 E3.65844',
-            'G0 F9000 X9.914 Y9.702',
-            'G1 F1200 X-9.702 Y-9.914 E3.95254',
-            'G0 F9000 X-9.560 Y-9.914',
-            'G1 F1200 X9.914 Y9.560 E4.24451',
-            'G0 F9000 X9.914 Y9.419',
-            'G1 F1200 X-9.419 Y-9.914 E4.53437',
-            'G0 F9000 X-9.277 Y-9.914',
-            'G1 F1200 X9.914 Y9.277 E4.82211',
-            'G0 F9000 X9.914 Y9.136',
-            'G1 F1200 X-9.136 Y-9.914 E5.10772',
-            'G0 F9000 X-8.995 Y-9.914',
-            'G1 F1200 X9.914 Y8.995 E5.39123',
-            'G0 F9000 X9.914 Y8.853',
-            'G1 F1200 X-8.853 Y-9.914 E5.67260'
-            ]
+    def polygonDraw(self, endPoint):
+        painter = QPainter(self.image)
+        painter.setPen(QPen(self.myPenColor, self.myPenWidth, Qt.SolidLine,
+                Qt.RoundCap, Qt.RoundJoin))
+        painter.drawLine(self.lastPoint, endPoint)
+        self.modified = True
 
-        for line in gcode:
-            coord = re.findall(r'[XY]-\d.\d\d\d', line)
-            if coord:
-                print("{} - {}".format(coord[0], coord[1]))
+        rad = self.myPenWidth / 2 + 2
+        self.update(QRect(self.lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad))
+        self.lastPoint = QPoint(endPoint)
+
+    def lineDraw(self, end):
+        painter = QPainter(self.image)
+        painter.setPen(QPen(self.myPenColor, self.myPenWidth, Qt.SolidLine,
+                Qt.RoundCap, Qt.RoundJoin))
+        painter.drawLine(self.lastPoint, endPoint)
+        self.modified = True
+
+        rad = self.myPenWidth / 2 + 2
+        self.update(QRect(self.lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad))
+        self.lastPoint = QPoint(endPoint)
+
+    # def paintEvent(self, e):
+    #
+    #      qp = QtGui.QPainter()
+    #      qp.begin(self)
+    #      self.rectangleDraw(qp)
+    #      qp.end()
+
+    #def rectangleDraw(self, qp):
+
+    #def PolygonDraw(self):
+
+    #def circleDraw(self):
+
 
     def penColor(self):
         newColor = QtGui.QColorDialog.getColor(self.graphicsView.penColor())
@@ -252,13 +151,15 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         txt_files = [f for f in os.listdir('.') if f.endswith('.gcode')]
         if len(txt_files) < 1:
             raise ValueError('There is no file with gcode extensions!')
+            QtGui.QMessageBox.about(None,"About","George-Paul GUI-Interface 2018")
 
         filename = txt_files[0]
-        f = open('eample.gcode', 'r')
-        for line in f:
-            coord = re.findall(r'[XY]-\d.\d\d\d', line)
-            if coord:
-                print("{} - {}".format(coord[0], coord[1]))
+        with open('eample.gcode') as gcode:
+            for line in gcode:
+                line = line.strip()
+                coord = re.findall(r'[XY].?\d+.\d+', line)
+                if coord:
+                    print("{} - {}".format(coord[0], coord[1]))
 
     def about(self):
         QtGui.QMessageBox.about(None,"About","George-Paul GUI-Interface 2018")
