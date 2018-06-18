@@ -1,5 +1,14 @@
 
+import sys
+from serial import *
+#from tkinter import *
 from PyQt4 import QtGui, QtCore
+
+
+serialPort = "/dev/ttyUSB0"
+baudRate = 9600
+ser = Serial(serialPort , baudRate, timeout = 0, writeTimeout=0) #ensure non-blocking
+
 
 class GraphicsView(QtGui.QWidget):
     def __init__(self, parent=None):
@@ -14,6 +23,16 @@ class GraphicsView(QtGui.QWidget):
         self.image = QtGui.QImage(imageSize, QtGui.QImage.Format_RGB32)
         self.lastPoint = QtCore.QPoint()
 
+    def saveImage(self, fileName, fileFormat):
+        visibleImage = self.image
+        self.resizeImage(visibleImage, self.size())
+
+        if visibleImage.save(fileName, fileFormat):
+            self.modified = False
+            return True
+        else:
+            return False
+
     def setPenColor(self, newColor):
         self.myPenColor = newColor
 
@@ -26,6 +45,12 @@ class GraphicsView(QtGui.QWidget):
         self.update()
 
     def mousePressEvent(self, event):
+        print ("x = %d" % self.image.width())
+        print ("y = %d" % self.image.height())
+        print("p = %s" % event.pos())
+        print(ser.name)
+        #ser.write(("string\r").encode())
+        #ser.write(("#"+str(value)+"$").encode())
         if event.button() == QtCore.Qt.LeftButton:
             self.lastPoint = event.pos()
             self.scribbling = True
@@ -58,7 +83,6 @@ class GraphicsView(QtGui.QWidget):
 
         self.update()
         self.lastPoint = QtCore.QPoint(endPoint)
-
 
     def resizeImage(self, image, newSize):
         if image.size() == newSize:
