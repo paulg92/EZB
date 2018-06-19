@@ -15,9 +15,6 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         super(self.__class__, self).__init__()
         QtGui.QMainWindow.__init__(self, parent = parent)
         self.setupUi(self)  # This is defined in design.py file automatically
-        self.actionSave_As = []
-
-        self.createActions()
 
         self.myPenWidth = 1
         self.myPenColor = QtCore.Qt.blue
@@ -31,23 +28,23 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         self.setCentralWidget(self.graphicsView)
 
         self.resize(600, 600)
-
+        self.hasChanged = False
 
         circleDraw = QtGui.QAction(None)
         self.actionCircle.setShortcut('Ctrl+M')
         self.actionCircle.triggered.connect(self.circleDraw)
 
-        #Pen color
+        #Pen Color
         penColor = QtGui.QAction(None)
         self.PenColor.setShortcut('Ctrl+C')
         self.PenColor.triggered.connect(self.penColor)
 
-        #Pen width
+        #Pen Width
         penWidth = QtGui.QAction(None)
         self.PenWidth.setShortcut('Ctrl+W')
         self.PenWidth.triggered.connect(self.penWidth)
 
-        #clear image
+        #Clear Image
         clearImage = QtGui.QAction(None)
         self.Clear_Screen.setShortcut('Ctrl+L')
         self.Clear_Screen.triggered.connect(self.graphicsView.clearImage)
@@ -55,26 +52,37 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         #action About
         self.actionAbout_GUI.triggered.connect(self.about)
 
-        # Add exit button
+        # Add Exit button
         exitButton = QtGui.QAction(None)
         self.actionQuit.setShortcut('Ctrl+Q')
         self.actionQuit.setStatusTip('Exit application')
         self.actionQuit.triggered.connect(QtGui.qApp.quit)
 
-        #Add save button
+        #Add Save button
         saveButton = QtGui.QAction(None)
         self.actionSave.setShortcut('Ctrl+S')
-        #self.actionSave.setStatusTip("Save Application")
         self.actionSave.triggered.connect(self.file_save)
-        #self.actionSave = QtGui.QMenu("&Save As", self)
-        for action in self.actionSave_As:
-            self.menuFile_Menu.addAction(action)
+
+        #Add Open button
+        openButton = QtGui.QAction(None)
+        self.actionOpen.setShortcut("Ctrl+O")
+        self.actionOpen.triggered.connect(self.file_open)
+
+
+    def saveImage(self, fileName):
+        visibleImage = self.image
+        self.resizeImage(visibleImage, self.size())
+
+        if visibleImage.save(fileName):
+            self.modified = False
+            return True
+        else:
+            return False
 
 
     def save(self):
         action = self.sender()
-        fileFormat = action.data()
-        self.file_save(fileFormat)
+        self.file_save()
 
     def circleDraw(self, event):
         super(ExampleApp, self).circleDraw(event)
@@ -103,31 +111,18 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         self.modified = True
         self.update()
 
-    def createActions(self):
-        openFile = QtGui.QAction(None)
-        self.actionOpen.setShortcut('Ctrl+O')
-        self.actionOpen.triggered.connect(self.file_open)
 
-        for format in QtGui.QImageWriter.supportedImageFormats():
-            format = str(format)
-
-            text = format.upper() + "..."
-
-            action = QtGui.QAction(text, self, triggered=self.save)
-            action.setData(format)
-            self.actionSave_As.append(action)
-
-
-    def file_save(self, fileFormat):
-        initialPath = QtCore.QDir.currentPath() + '/untitled.' + fileFormat
+    def file_save(self):
+        initialPath = QtCore.QDir.currentPath()
 
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Save As",
             initialPath,
-            "%s Files (*.%s);;All Files (*)" % (fileFormat.upper(), fileFormat))
+            "png(*);")
         if fileName:
-            return self.graphicsView.saveImage(fileName, fileFormat)
+            return self.graphicsView.saveImage(fileName, 'png')
 
         return False
+
 
     def file_open(self):
         fname = QtGui.QFileDialog.getOpenFileName(self, 'Open file',
