@@ -132,7 +132,7 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow, QtGui.QGraphicsView):
         if len(txt_files) < 1:
             raise ValueError('There is no file with gcode extensions!')
         filename = txt_files[0]
-        with open('eample.gcode') as gcode:
+        with open('example.gcode') as gcode:
             for line in gcode:
                 line = line.strip()
                 coord = re.findall(r'[XY].?\d+.\d+', line)
